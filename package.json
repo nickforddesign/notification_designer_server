@@ -1,0 +1,22 @@
+{
+  "name": "template_designer",
+  "version": "1.0.0",
+  "description": "Proof of concept for node port of notification designer",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "asyncawait": "^1.0.6",
+    "body-parser": "^1.17.2",
+    "cors": "^2.8.4",
+    "express": "^4.15.4",
+    "hogan": "^1.0.2",
+    "http": "0.0.0",
+    "inline-css": "^2.2.2",
+    "require-text": "0.0.1"
+  }
+}

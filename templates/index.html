@@ -1,0 +1,29 @@
+<style>
+  h1.header {
+    color: blue
+  }
+  .test h1.header {
+    color: red;
+  }
+</style>
+
+<h1 class="header">{{header}}</h1>
+
+<div class="test">
+  <h1 class="header">{{header}}</h1>
+</div>
+{{#bug}}
+{{/bug}}
+
+{{#items}}
+  {{#first}}
+    <li><strong>{{name}}</strong></li>
+  {{/first}}
+  {{#link}}
+    <li><a href="{{url}}">{{name}}</a></li>
+  {{/link}}
+{{/items}}
+
+{{#empty}}
+  <p>The list is empty.</p>
+{{/empty}}

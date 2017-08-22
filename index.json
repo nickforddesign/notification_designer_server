@@ -1,0 +1,9 @@
+{
+  "header": "Colors",
+  "items": [
+      {"name": "red", "first": true, "url": "http://Red.com"},
+      {"name": "green", "link": true, "url": "http://Green.com"},
+      {"name": "blue", "link": true, "url": "http://Blue.com"}
+  ],
+  "empty": false
+}
