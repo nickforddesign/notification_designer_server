@@ -1,0 +1,11 @@
+@import 'colors';
+$color-test-header: red;
+
+h1.header {
+  color: $color-text;
+}
+.test {
+  h1.header {
+    color: $color-test-header;
+  }
+}

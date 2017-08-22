@@ -1,4 +1,4 @@
-const requireText = require('require-text')
+/*const requireText = require('require-text')
 const async = require('asyncawait/async')
 const await = require('asyncawait/await')
 const compile = require('./src/compile')
@@ -12,3 +12,10 @@ async (() => {
   const html = await (compile(inlined, json))
   console.log({html});
 })()
+*/
+
+const utils = require('./src/utils')
+
+utils.getTree().then(dirs => {
+  console.log(dirs)
+})

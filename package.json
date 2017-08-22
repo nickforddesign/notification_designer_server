@@ -14,9 +14,11 @@
     "body-parser": "^1.17.2",
     "cors": "^2.8.4",
     "express": "^4.15.4",
+    "glob": "^7.1.2",
     "hogan": "^1.0.2",
     "http": "0.0.0",
     "inline-css": "^2.2.2",
+    "node-sass": "^4.5.3",
     "require-text": "0.0.1"
   }
 }

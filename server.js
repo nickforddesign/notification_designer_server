@@ -6,6 +6,7 @@ const express = require('express')
 // import socketio from 'socket.io'
 const cors = require('cors')
 const bodyParser = require('body-parser')
+const preprocess = require('./src/preprocess')
 const compile = require('./src/compile')
 const inline = require('./src/inline')
 
@@ -20,28 +21,52 @@ app.use(bodyParser.json())
 app.listen(port)
 
 app.get('/', async (req, res) => {
-  const template_html = requireText('./templates/index.html', require);
-  const json = require('./index.json');
+  // const template_html = requireText('./templates/index.html', require);
+  // const json = require('./index.json');
 
-  const inlined = await (inline(template_html))
-  const html = await (compile(inlined, json))
+  // const inlined = await (inline(template_html))
+  // const html = await (compile(inlined, json))
   
-  console.log('get request: /')
+  // console.log('get request: /')
 
-  res.send(html)
+  // res.send(html)
+})
+
+// proxy requests for template assets
+
+app.get('/templates/:name/:file', (req, res) => {
+  const path = req.originalUrl
+  res.sendFile(`data/${path}`, {
+    root: __dirname
+  })
 })
 
 app.post('/', async (req, res) => {
-  console.log(req.body)
-  const template_html = req.body.template
-  const json = require('./index.json');
+  try {
+    const template_html = req.body.template
+    const css = req.body.css
 
-  const inlined = await (inline(template_html))
-  const html = await (compile(inlined, json))
+    const json = require('./data/index.json');
+
+    const processed = await (preprocess(css))
+    console.log({processed})
+    const concatted = `
+    <style>
+      ${processed}
+    </style>
+    ${template_html}
+    `
+
+    const inlined = await (inline(concatted))
+    const html = await (compile(inlined, json))
+    
+    console.log('post request: /')
+
+    res.send(html)
+  } catch(error) {
+    res.status(500).send(error.message)
+  }
   
-  console.log('post request: /')
-
-  res.send(html)
 })
 
 console.log(`Listening on port ${port}`)
