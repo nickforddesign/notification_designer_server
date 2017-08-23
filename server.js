@@ -1,3 +1,4 @@
+const fs = require('fs')
 const async = require('asyncawait/async')
 const await = require('asyncawait/await')
 const requireText = require('require-text')
@@ -39,6 +40,21 @@ app.get('/templates/:name/:file', (req, res) => {
   res.sendFile(`data/${path}`, {
     root: __dirname
   })
+})
+
+app.put('/templates/:name/:file', (req, res) => {
+  const path = req.originalUrl
+  fs.writeFile(`data/${path}`, req.body.content, (error) => {
+    if (error) {
+      console.log(error)
+      res.status(500).send('Could not save')
+    } else {
+      res.send('Saved successfully')
+    }
+  })
+  // res.sendFile(`data/${path}`, {
+  //   root: __dirname
+  // })
 })
 
 app.post('/', async (req, res) => {
