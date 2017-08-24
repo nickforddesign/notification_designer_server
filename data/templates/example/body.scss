@@ -2,6 +2,8 @@
 $color-test-header: pink;
 
 h1.header {
+  # display: block;
+  background: $color-header-background;
   color: $color-text;
 }
 .test {

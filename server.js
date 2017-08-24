@@ -35,6 +35,13 @@ app.get('/', async (req, res) => {
 
 // proxy requests for template assets
 
+app.get('/:file', (req, res) => {
+  const path = req.originalUrl
+  res.sendFile(`data/${path}`, {
+    root: __dirname
+  })
+})
+
 app.get('/templates/:name/:file', (req, res) => {
   const path = req.originalUrl
   res.sendFile(`data/${path}`, {
@@ -62,7 +69,7 @@ app.post('/', async (req, res) => {
     const template_html = req.body.template
     const css = req.body.css
 
-    const json = require('./data/index.json');
+    const json = require('./data/globals.json');
 
     const processed = await (preprocess(css))
     console.log({processed})
@@ -74,11 +81,29 @@ app.post('/', async (req, res) => {
     `
 
     const inlined = await (inline(concatted))
-    const html = await (compile(inlined, json))
+    let html = await (compile(inlined, json))
+
+    fs.readFile('./data/globals.scss', 'utf8', async (err, data) => {
+      if (err) {
+        throw err
+      } else {
+        // console.log(data)
+        const processed_globals = await (preprocess(data))
+        console.log(processed_globals)
+        html = `
+        <style>
+          ${processed_globals}
+        </style>
+        ${html}
+        `
+        res.send(html)
+      }
+      
+    })
     
     console.log('post request: /')
 
-    res.send(html)
+    
   } catch(error) {
     res.status(500).send(error.message)
   }
