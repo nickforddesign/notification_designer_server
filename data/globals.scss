@@ -1,5 +1,7 @@
 @import 'colors';
+@import 'fonts';
 
 body {
+  font-family: $font-family-primary;
   background: $color-background;
 }

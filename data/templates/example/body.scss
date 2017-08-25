@@ -1,13 +1,12 @@
 @import 'colors';
-$color-test-header: pink;
+$color-header: red;
 
 h1.header {
-  # display: block;
   background: $color-header-background;
   color: $color-text;
 }
 .test {
   h1.header {
-    color: $color-test-header;
+    color: $color-header;
   }
 }

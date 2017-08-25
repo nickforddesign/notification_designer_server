@@ -1,21 +1,7 @@
-/*const requireText = require('require-text')
-const async = require('asyncawait/async')
-const await = require('asyncawait/await')
-const compile = require('./src/compile')
-const inline = require('./src/inline')
+const utils = require('./src/utils');
 
-const template_html = requireText('./templates/index.html', require)
-const json = requireText('./index.json', require)
-
-async (() => {
-  const inlined = await (inline(template_html))
-  const html = await (compile(inlined, json))
-  console.log({html});
+(async () => {
+  const files_array = await utils.readdirRecursive('data')
+  const tree = await utils.pathsToTree(files_array)
+  utils.consoleObj({tree})
 })()
-*/
-
-const utils = require('./src/utils')
-
-utils.getTree().then(dirs => {
-  console.log(dirs)
-})
