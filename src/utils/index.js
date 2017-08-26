@@ -77,11 +77,16 @@ exports.pathsToTree = (paths) => {
   for (let index in paths) {
     const path = paths[index]
     const is_file = isFile(path)
-    if (is_file) {
-      files.push(path)
-    } else {
-      directories.push(path)
-    }
+    is_file
+      ? files.push(path)
+      : directories.push(path)
+  }
+  
+  for (let index in directories) {
+    const path = directories[index]
+    const split_path = path.split('/')
+    const filename = split_path[split_path.length - 1]
+    _.set(output, split_path, {})
   }
 
   for (let index in files) {
