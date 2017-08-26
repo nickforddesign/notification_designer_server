@@ -24,6 +24,12 @@ function Deferred () {
 
 module.Deferred = Deferred
 
+function handleDeferred(error, data, deferred) {
+  error
+    ? deferred.reject(error)
+    : deferred.resolve(data)
+}
+
 /**
  * Read a file and return contents asynchronously
  * 
@@ -34,11 +40,7 @@ module.Deferred = Deferred
  */
 exports.readFile = (path = '', encoding = 'utf8') => {
   const deferred = new Deferred()
-  fs.readFile(path, encoding, (err, data) => {
-    err
-      ? deferred.reject(err)
-      : deferred.resolve(data)
-  })
+  fs.readFile(path, encoding, handleDeferred(error, data, deferred))
   return deferred.promise
 }
 
