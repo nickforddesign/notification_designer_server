@@ -8,5 +8,4 @@ module.exports = function compile(template, data) {
   } catch(error) {
     return Promise.reject(error)
   }
-  
 }
