@@ -1,3 +1,4 @@
+const _ = require('lodash')
 const fs = require('fs')
 const express = require('express')
 const cors = require('cors')
@@ -24,8 +25,9 @@ app.get('/', async (req, res) => {
   res.send(tree)
 })
 
-app.get('/*', (req, res) => {
+app.get('/*', async (req, res) => {
   const path = req.originalUrl
+  await utils.sleep(3000)
   res.sendFile(`data/${path}`, {
     root: __dirname
   })
@@ -61,14 +63,20 @@ app.post('/', async (req, res) => {
     const template_html = req.body.template
     const css = req.body.css
 
-    const json = require('./data/globals.json');
     const processed = await (preprocess(css))
     const concatted = `
     <style>${processed}</style>
     ${template_html}
     `
     const inlined = await inline(concatted)
-    let html = await compile(inlined, json)
+    const main_html = await utils.readFile('./data/partials/email/index.html')
+    const partial = {
+      content: inlined
+    }
+    const partial_json = require('./data/templates/example/data.json')
+    const json = require('./data/globals.json');
+    let html = await compile(main_html, _.merge({}, json, partial_json), partial)
+    // let html = await compile(inlined, json)
 
     const data = await utils.readFile('./data/globals.scss')
     const processed_globals = await preprocess(data)

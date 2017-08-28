@@ -6,6 +6,11 @@ exports.consoleObj = (obj) => {
   return console.log(JSON.stringify(obj, null, 4));
 }
 
+exports.sleep = (ms) => {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+
 /**
  * Deferred promises
  * 
