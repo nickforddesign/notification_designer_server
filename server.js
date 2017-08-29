@@ -7,7 +7,6 @@ const preprocess = require('./src/preprocess')
 const compile = require('./src/compile')
 const inline = require('./src/inline')
 const utils = require('./src/utils')
-
 const port = '3636'
 
 // Server
@@ -47,11 +46,21 @@ app.post('/templates', async (req, res) => {
     const template_name = req.body.name
     const message = await utils.createTemplate(template_name)
     res.send(message)
-  } catch(error) {
+  } catch (error) {
     console.warn(error)
     res.status(500).send(error.message)
   }
-  
+})
+
+app.delete('/templates/:name', async (req, res) => {
+  try {
+    const template_name = req.params.name
+    const message = await utils.removeTemplate(template_name)
+    res.send(message)
+  } catch (error) {
+    console.warn(error)
+    res.status(500).send(error.message)
+  }
 })
 
 app.post('/', async (req, res) => {
@@ -68,7 +77,7 @@ app.post('/', async (req, res) => {
       content: inlined
     }
     const partial_json = require('./data/templates/example/data.json')
-    const json = require('./data/globals.json');
+    const json = require('./data/globals.json')
     let html = await compile(main_html, _.merge({}, json, partial_json), partial)
     // let html = await compile(inlined, json)
 
@@ -80,10 +89,9 @@ app.post('/', async (req, res) => {
     ${html}
     `
     res.send(html)
-    
-    console.log('post request: /')
 
-  } catch(error) {
+    console.log('post request: /')
+  } catch (error) {
     console.log('caught error', error)
     res.status(500).send(error.message)
   }

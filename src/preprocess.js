@@ -10,4 +10,3 @@ module.exports = function preprocess (data) {
   })
   return output.css.toString()
 }
-

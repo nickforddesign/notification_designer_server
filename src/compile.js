@@ -7,7 +7,7 @@ module.exports = function compile(template, data, partials) {
     if (partials !== undefined) args.push(partials)
     const html = compiled.render(...args)
     return Promise.resolve(html)
-  } catch(error) {
+  } catch (error) {
     console.log('caught compilation error', error)
     return Promise.reject(error)
   }

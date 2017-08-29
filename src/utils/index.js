@@ -1,9 +1,10 @@
 const _ = require('lodash')
 const fs = require('fs')
 const glob = require('glob')
+const rimraf = require('rimraf')
 
 exports.consoleObj = (obj) => {
-  return console.log(JSON.stringify(obj, null, 4));
+  return console.log(JSON.stringify(obj, null, 4))
 }
 
 exports.sleep = (ms) => {
@@ -27,7 +28,6 @@ function Deferred () {
 }
 
 exports.Deferred = Deferred
-
 
 /**
  * Wrap a node function that uses a callback
@@ -118,18 +118,18 @@ exports.pathsToTree = (paths) => {
       ? files.push(path)
       : directories.push(path)
   }
-  
+
   for (let index in directories) {
     const path = directories[index]
     const split_path = path.split('/')
-    const filename = split_path[split_path.length - 1]
+    // const filename = split_path[split_path.length - 1]
     _.set(output, split_path, {})
   }
 
   for (let index in files) {
     const path = files[index]
     const split_path = path.split('/')
-    const filename = split_path[split_path.length - 1]
+    // const filename = split_path[split_path.length - 1]
     _.set(output, split_path, path)
   }
   return output
@@ -155,7 +155,7 @@ exports.createTemplate = async (template_name) => {
     template_path,
     `${template_path}/email`,
     `${template_path}/push`,
-    `${template_path}/text`,
+    `${template_path}/text`
   ]
 
   const files = [
@@ -164,7 +164,7 @@ exports.createTemplate = async (template_name) => {
     `${template_path}/email/subject.html`,
     `${template_path}/email/style.scss`,
     `${template_path}/push/index.html`,
-    `${template_path}/text/index.html`,
+    `${template_path}/text/index.html`
   ]
 
   try {
@@ -174,7 +174,11 @@ exports.createTemplate = async (template_name) => {
     for (let index in files) {
       await appendFile(files[index])
     }
-  } catch(error) {
+  } catch (error) {
     throw error
   }
+}
+
+exports.removeTemplate = async (template_name) => {
+  return asyncCallback(rimraf, `data/templates/${template_name}`)
 }

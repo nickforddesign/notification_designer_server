@@ -9,7 +9,7 @@ module.exports = function inline(template_html, options = {}) {
   try {
     const output = inliner(template_html, merged_options)
     return Promise.resolve(output)
-  } catch(error) {
+  } catch (error) {
     return Promise.reject(error)
   }
 }
