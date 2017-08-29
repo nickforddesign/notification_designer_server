@@ -182,3 +182,36 @@ exports.createTemplate = async (template_name) => {
 exports.removeTemplate = async (template_name) => {
   return asyncCallback(rimraf, `data/templates/${template_name}`)
 }
+
+exports.createPartial = async (partial_name) => {
+  const partials = fs.readdirSync('data/partials')
+  if (partials.includes(partial_name)) {
+    throw new Error('A partial with that name already exists')
+  }
+
+  const partial_path = `data/partials/${partial_name}`
+
+  const folders = [
+    partial_path
+  ]
+
+  const files = [
+    `${partial_path}/index.html`,
+    `${partial_path}/style.scss`
+  ]
+
+  try {
+    for (let index in folders) {
+      await mkdir(folders[index])
+    }
+    for (let index in files) {
+      await appendFile(files[index])
+    }
+  } catch (error) {
+    throw error
+  }
+}
+
+exports.removePartial = async (partial_name) => {
+  return asyncCallback(rimraf, `data/partials/${partial_name}`)
+}

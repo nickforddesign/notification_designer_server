@@ -54,8 +54,8 @@ app.post('/templates', async (req, res) => {
 
 app.delete('/templates/:name', async (req, res) => {
   try {
-    const template_name = req.params.name
-    const message = await utils.removeTemplate(template_name)
+    const name = req.params.name
+    const message = await utils.removeTemplate(name)
     res.send(message)
   } catch (error) {
     console.warn(error)
@@ -63,23 +63,67 @@ app.delete('/templates/:name', async (req, res) => {
   }
 })
 
-app.post('/', async (req, res) => {
+app.post('/partials', async (req, res) => {
+  try {
+    const name = req.body.name
+    const message = await utils.createPartial(name)
+    res.send(message)
+  } catch (error) {
+    console.warn(error)
+    res.status(500).send(error.message)
+  }
+})
+
+app.delete('/partials/:name', async (req, res) => {
+  try {
+    const name = req.params.name
+    const message = await utils.removePartial(name)
+    res.send(message)
+  } catch (error) {
+    console.warn(error)
+    res.status(500).send(error.message)
+  }
+})
+
+app.post('/render/:type', async (req, res) => {
   try {
     const template_html = req.body.template || ''
     const css = req.body.css || '//' // sass-node will throw error if nothing is passed
 
-    const processed = await (preprocess(css))
+    const processed = await preprocess(css)
     const inlined = await inline(template_html, {
       extraCss: processed
     })
     const main_html = await utils.readFile('./data/partials/email/index.html')
-    const partial = {
-      content: inlined
+
+    let partials_array = fs.readdirSync('./data/partials').filter(filename => {
+      return !(/^\./.test(filename))
+    })
+    console.log({partials_array})
+    let partials = {}
+
+    // partials_array.map(async (name) => {
+    for (let name of partials_array) {
+      console.log(name)
+      console.log('')
+      const template = await utils.readFile(`./data/partials/${name}/index.html`)
+      const scss = await utils.readFile(`./data/partials/${name}/style.scss`)
+      const css = await preprocess(scss)
+      const template_inlined = await inline(template, {
+        extraCss: css
+      })
+      console.log({template_inlined})
+      partials[name] = template_inlined
     }
-    const partial_json = require('./data/templates/example/data.json')
+
+    partials.content = inlined
+
+    console.log({partials})
+
+    const partial_json = require('./data/templates/bill_due_today/data.json')
     const json = require('./data/globals.json')
-    let html = await compile(main_html, _.merge({}, json, partial_json), partial)
-    // let html = await compile(inlined, json)
+    const merged = _.merge({}, json, partial_json)
+    let html = await compile(main_html, merged, partials)
 
     const data = await utils.readFile('./data/globals.scss')
     const processed_globals = await preprocess(data)
@@ -92,7 +136,7 @@ app.post('/', async (req, res) => {
 
     console.log('post request: /')
   } catch (error) {
-    console.log('caught error', error)
+    // console.log('caught error', error)
     res.status(500).send(error.message)
   }
 })
