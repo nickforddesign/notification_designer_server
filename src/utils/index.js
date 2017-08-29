@@ -29,6 +29,12 @@ function Deferred () {
 
 module.Deferred = Deferred
 
+function handleDeferred(error, data, deferred) {
+  error
+    ? deferred.reject(error)
+    : deferred.resolve(data)
+}
+
 /**
  * Read a file and return contents asynchronously
  * 
@@ -39,11 +45,7 @@ module.Deferred = Deferred
  */
 exports.readFile = (path = '', encoding = 'utf8') => {
   const deferred = new Deferred()
-  fs.readFile(path, encoding, (err, data) => {
-    err
-      ? deferred.reject(err)
-      : deferred.resolve(data)
-  })
+  fs.readFile(path, encoding, handleDeferred(error, data, deferred))
   return deferred.promise
 }
 
@@ -82,11 +84,16 @@ exports.pathsToTree = (paths) => {
   for (let index in paths) {
     const path = paths[index]
     const is_file = isFile(path)
-    if (is_file) {
-      files.push(path)
-    } else {
-      directories.push(path)
-    }
+    is_file
+      ? files.push(path)
+      : directories.push(path)
+  }
+  
+  for (let index in directories) {
+    const path = directories[index]
+    const split_path = path.split('/')
+    const filename = split_path[split_path.length - 1]
+    _.set(output, split_path, {})
   }
 
   for (let index in files) {
