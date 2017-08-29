@@ -33,22 +33,6 @@ app.get('/*', async (req, res) => {
   })
 })
 
-// app.put('/:file', (req, res) => {
-//   const path = req.originalUrl
-//   fs.writeFile(`data/${path}`, req.body.content, (error) => {
-//     error
-//       ? res.status(500).send('Could not save')
-//       : res.send('Saved successfully')
-//   })
-// })
-
-// app.get('/templates/:name/:file', (req, res) => {
-//   const path = req.originalUrl
-//   res.sendFile(`data/${path}`, {
-//     root: __dirname
-//   })
-// })
-
 app.put('/*', (req, res) => {
   const path = req.originalUrl
   fs.writeFile(`data/${path}`, req.body.content, (error) => {
@@ -58,17 +42,27 @@ app.put('/*', (req, res) => {
   })
 })
 
+app.post('/templates', async (req, res) => {
+  try {
+    const template_name = req.body.name
+    const message = await utils.createTemplate(template_name)
+    res.send(message)
+  } catch(error) {
+    console.warn(error)
+    res.status(500).send(error.message)
+  }
+  
+})
+
 app.post('/', async (req, res) => {
   try {
-    const template_html = req.body.template
-    const css = req.body.css
+    const template_html = req.body.template || ''
+    const css = req.body.css || '//' // sass-node will throw error if nothing is passed
 
     const processed = await (preprocess(css))
-    const concatted = `
-    <style>${processed}</style>
-    ${template_html}
-    `
-    const inlined = await inline(concatted)
+    const inlined = await inline(template_html, {
+      extraCss: processed
+    })
     const main_html = await utils.readFile('./data/partials/email/index.html')
     const partial = {
       content: inlined
@@ -90,6 +84,7 @@ app.post('/', async (req, res) => {
     console.log('post request: /')
 
   } catch(error) {
+    console.log('caught error', error)
     res.status(500).send(error.message)
   }
 })

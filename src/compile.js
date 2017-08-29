@@ -8,6 +8,7 @@ module.exports = function compile(template, data, partials) {
     const html = compiled.render(...args)
     return Promise.resolve(html)
   } catch(error) {
+    console.log('caught compilation error', error)
     return Promise.reject(error)
   }
 }

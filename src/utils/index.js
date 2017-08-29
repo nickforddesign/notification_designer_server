@@ -1,5 +1,5 @@
-const fs = require('fs')
 const _ = require('lodash')
+const fs = require('fs')
 const glob = require('glob')
 
 exports.consoleObj = (obj) => {
@@ -9,7 +9,6 @@ exports.consoleObj = (obj) => {
 exports.sleep = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
-
 
 /**
  * Deferred promises
@@ -27,12 +26,51 @@ function Deferred () {
   Object.freeze(this)
 }
 
-module.Deferred = Deferred
+exports.Deferred = Deferred
 
-function handleDeferred(error, data, deferred) {
-  error
-    ? deferred.reject(error)
-    : deferred.resolve(data)
+
+/**
+ * Wrap a node function that uses a callback
+ * 
+ * @async
+ * @param {Function} fn  the function to wrap
+ * @param {any} args     any amount of args
+ * @returns {any}        returns a promise with whatever fn returns
+ */
+function asyncCallback(fn, ...args) {
+  const deferred = new Deferred()
+  fn(...args, (error, data) => {
+    error
+      ? deferred.reject(error)
+      : deferred.resolve(data)
+  })
+  return deferred.promise
+}
+
+exports.asyncCallback = asyncCallback
+
+/**
+ * Append to file and return promise
+ * 
+ * @param {string} [path=''] 
+ * @param {string} [content=''] 
+ * @returns 
+ */
+function appendFile(path = '', content = '') {
+  return asyncCallback(fs.appendFile, path, content)
+}
+
+exports.appendFile = appendFile
+
+/**
+ * Make directory and return promise
+ * 
+ * @param {string} [path=''] 
+ * @param {number} [mask=0o775] 
+ * @returns 
+ */
+function mkdir(path = '', mask = 0o775) {
+  return asyncCallback(fs.mkdir, path, mask)
 }
 
 /**
@@ -44,9 +82,7 @@ function handleDeferred(error, data, deferred) {
  * @returns {String}
  */
 exports.readFile = (path = '', encoding = 'utf8') => {
-  const deferred = new Deferred()
-  fs.readFile(path, encoding, handleDeferred(error, data, deferred))
-  return deferred.promise
+  return asyncCallback(fs.readFile, path, encoding)
 }
 
 /**
@@ -57,13 +93,7 @@ exports.readFile = (path = '', encoding = 'utf8') => {
  * @returns {Array} 
  */
 exports.readdirRecursive = (path = '') => {
-  const deferred = new Deferred()
-  glob(`${path}/**/*`, (err, res) => {
-    err
-      ? deferred.reject(err)
-      : deferred.resolve(res)
-  })
-  return deferred.promise
+  return asyncCallback(glob, `${path}/**/*`)
 }
 
 function isFile (path) {
@@ -105,5 +135,46 @@ exports.pathsToTree = (paths) => {
   return output
 }
 
+/**
+ * Create new template
+ * 
+ * @async
+ * @param {String} template_name 
+ * @returns {Promise}
+ */
+exports.createTemplate = async (template_name) => {
+  const templates = fs.readdirSync('data/templates')
 
+  if (templates.includes(template_name)) {
+    throw new Error('A template with that name already exists')
+  }
 
+  const template_path = `data/templates/${template_name}`
+
+  const folders = [
+    template_path,
+    `${template_path}/email`,
+    `${template_path}/push`,
+    `${template_path}/text`,
+  ]
+
+  const files = [
+    `${template_path}/data.json`,
+    `${template_path}/email/index.html`,
+    `${template_path}/email/subject.html`,
+    `${template_path}/email/style.scss`,
+    `${template_path}/push/index.html`,
+    `${template_path}/text/index.html`,
+  ]
+
+  try {
+    for (let index in folders) {
+      await mkdir(folders[index])
+    }
+    for (let index in files) {
+      await appendFile(files[index])
+    }
+  } catch(error) {
+    throw error
+  }
+}
