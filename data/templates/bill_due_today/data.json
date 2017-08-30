@@ -6,7 +6,7 @@
 	"url": "http://payment.rafiproperties.com",
 	"transfers": [
 		{
-			"name": "Tony Tonah",
+			"name": "Tony Tonay",
 			"date": "9/1/17",
 			"status": "pending"
 		}
@@ -14,7 +14,7 @@
 	"details": [
 		{
 			"key": "Lease",
-			"value": "533 Washington St, Unit 1"
+			"value": "533 Washington St, Unit 2"
 		},
 		{
 			"key": "Date",

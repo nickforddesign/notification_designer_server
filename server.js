@@ -20,13 +20,13 @@ app.listen(port)
 
 app.get('/', async (req, res) => {
   const files_array = await utils.readdirRecursive('data')
-  const tree = await utils.pathsToTree(files_array)
-  res.send(tree)
+  const tree = utils.pathsToTree(files_array)
+  const files = utils.treeToArray(tree)
+  res.send(files)
 })
 
 app.get('/*', async (req, res) => {
   const path = req.originalUrl
-  await utils.sleep(3000)
   res.sendFile(`data/${path}`, {
     root: __dirname
   })
@@ -94,7 +94,7 @@ app.post('/render/:type', async (req, res) => {
     const inlined = await inline(template_html, {
       extraCss: processed
     })
-    const main_html = await utils.readFile('./data/partials/email/index.html')
+    const main_html = await utils.readFile('./data/index.html')
 
     let partials_array = fs.readdirSync('./data/partials').filter(filename => {
       return !(/^\./.test(filename))
@@ -104,21 +104,16 @@ app.post('/render/:type', async (req, res) => {
 
     // partials_array.map(async (name) => {
     for (let name of partials_array) {
-      console.log(name)
-      console.log('')
       const template = await utils.readFile(`./data/partials/${name}/index.html`)
       const scss = await utils.readFile(`./data/partials/${name}/style.scss`)
       const css = await preprocess(scss)
       const template_inlined = await inline(template, {
         extraCss: css
       })
-      console.log({template_inlined})
       partials[name] = template_inlined
     }
 
     partials.content = inlined
-
-    console.log({partials})
 
     const partial_json = require('./data/templates/bill_due_today/data.json')
     const json = require('./data/globals.json')

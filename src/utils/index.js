@@ -121,19 +121,37 @@ exports.pathsToTree = (paths) => {
 
   for (let index in directories) {
     const path = directories[index]
-    const split_path = path.split('/')
-    // const filename = split_path[split_path.length - 1]
-    _.set(output, split_path, {})
+    const split_path = path.split('/').join('/data/').split('/')
+    _.set(output, split_path, { path, type: 'folder', data: {} })
   }
 
   for (let index in files) {
     const path = files[index]
-    const split_path = path.split('/')
-    // const filename = split_path[split_path.length - 1]
-    _.set(output, split_path, path)
+    const split_path = path.split('/').join('/data/').split('/')
+    _.set(output, split_path, { path, type: 'file' })
   }
   return output
 }
+
+function treeToArray (object) {
+  let output = []
+  for (let key in object) {
+    let file = {}
+    file.name = key
+    file.type = object[key].type
+    file.path = object[key].path
+    if (file.type === 'file') {
+      file.data = object[key].data
+    } else {
+      file.data = treeToArray(object[key].data)
+    }
+    output.push(file)
+  }
+  // console.log({output})
+  return output
+}
+
+exports.treeToArray = treeToArray
 
 /**
  * Create new template
