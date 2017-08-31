@@ -2,6 +2,9 @@ const _ = require('lodash')
 const fs = require('fs')
 const glob = require('glob')
 const rimraf = require('rimraf')
+const preprocess = require('../preprocess')
+const compile = require('../compile')
+const inline = require('../inline')
 
 exports.consoleObj = (obj) => {
   return console.log(JSON.stringify(obj, null, 4))
@@ -81,9 +84,11 @@ function mkdir(path = '', mask = 0o775) {
  * @param {string} [encoding='utf8'] 
  * @returns {String}
  */
-exports.readFile = (path = '', encoding = 'utf8') => {
+const readFile = (path = '', encoding = 'utf8') => {
   return asyncCallback(fs.readFile, path, encoding)
 }
+
+exports.readFile = readFile
 
 /**
  * Recursively read a directory asynchronously
@@ -92,9 +97,11 @@ exports.readFile = (path = '', encoding = 'utf8') => {
  * @param {string} [path=''] 
  * @returns {Array} 
  */
-exports.readdirRecursive = (path = '') => {
+const readdirRecursive = (path = '') => {
   return asyncCallback(glob, `${path}/**/*`)
 }
+
+exports.readdirRecursive = readdirRecursive
 
 function isFile (path) {
   return fs.lstatSync(path).isFile()
@@ -133,7 +140,7 @@ exports.pathsToTree = (paths) => {
   return output
 }
 
-function treeToArray (object) {
+const treeToArray = (object) => {
   let output = []
   for (let key in object) {
     let file = {}
@@ -142,12 +149,12 @@ function treeToArray (object) {
     file.path = object[key].path
     if (file.type === 'file') {
       file.data = object[key].data
+      file.ext = file.name.split('.').slice(-1)[0]
     } else {
       file.data = treeToArray(object[key].data)
     }
     output.push(file)
   }
-  // console.log({output})
   return output
 }
 
@@ -197,10 +204,23 @@ exports.createTemplate = async (template_name) => {
   }
 }
 
+/**
+ * remove template
+ * 
+ * @param {String} template_name 
+ * @returns 
+ */
 exports.removeTemplate = async (template_name) => {
   return asyncCallback(rimraf, `data/templates/${template_name}`)
 }
 
+/**
+* Create new partial
+* 
+* @async
+* @param {String} partial_name 
+* @returns {Promise}
+*/
 exports.createPartial = async (partial_name) => {
   const partials = fs.readdirSync('data/partials')
   if (partials.includes(partial_name)) {
@@ -230,6 +250,71 @@ exports.createPartial = async (partial_name) => {
   }
 }
 
+/**
+ * remove a partial
+ * 
+ * @async
+ * @param {String} partial_name 
+ * @returns {Promise}
+ */
 exports.removePartial = async (partial_name) => {
   return asyncCallback(rimraf, `data/partials/${partial_name}`)
+}
+
+/**
+ * render an email template
+ * 
+ * @param {String} template_path   path of template to render
+ * @returns {String}               rendered html
+ */
+exports.renderEmail = async (template_path) => {
+  const path = `${template_path}/email`
+  
+  const template = await readFile(`${path}/index.html`)
+  const template_scss = await readFile(`${path}/style.scss`) || '//'
+  const template_data = JSON.parse(await readFile(`${template_path}/data.json`))
+
+  const template_css = await preprocess(template_scss)
+  const template_inlined = await inline(template, {
+    extraCss: template_css
+  })
+
+  const subject_template = await readFile(`${path}/subject.html`)
+
+  const global_template = await readFile('./data/index.html')
+  const global_scss = await readFile('./data/globals.scss') || '//'
+  const global_data = JSON.parse(await readFile('./data/globals.json'))
+
+  const global_css = await preprocess(global_scss)
+
+  let partial_paths_array = fs.readdirSync('./data/partials').filter(filename => {
+    return !(/^\./.test(filename))
+  })
+
+  let partials = {}
+
+  for (let name of partial_paths_array) {
+    const partial_template = await readFile(`./data/partials/${name}/index.html`)
+    const partial_scss = await readFile(`./data/partials/${name}/style.scss`)
+    const partial_css = await preprocess(partial_scss)
+    const partial_template_inlined = await inline(partial_template, {
+      extraCss: partial_css
+    })
+    partials[name] = partial_template_inlined
+  }
+
+  partials.content = template_inlined
+
+  const merged_data = _.merge({}, global_data, template_data)
+  let html = await compile(global_template, merged_data, partials)
+  let subject = await compile (subject_template, merged_data)
+
+  html = `
+  <style>${global_css}</style>
+  ${html}
+  `
+  return {
+    html,
+    subject
+  }
 }
