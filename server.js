@@ -1,4 +1,4 @@
-const _ = require('lodash')
+// const _ = require('lodash')
 const fs = require('fs')
 const express = require('express')
 const cors = require('cors')
@@ -18,23 +18,35 @@ app.listen(port)
 
 // Endpoints
 
-app.get('/', async (req, res) => {
-  const files_array = await utils.readdirRecursive('data')
-  const tree = utils.pathsToTree(files_array)
-  const files = utils.treeToArray(tree)
-  res.send(files)
+app.get('/data', async (req, res) => {
+  let output = {}
+  const dirs = {
+    templates: 'data/templates/',
+    partials: 'data/partials/',
+    styles: 'data/styles/',
+    globals: 'data/globals/'
+  }
+
+  for (let key in dirs) {
+    const paths_array = await utils.readdirRecursive(dirs[key])
+    const short_paths_array = utils.shortenPaths(dirs[key], paths_array)
+    const tree = utils.pathsToTree(short_paths_array, dirs[key])
+    const files = utils.treeToArray(tree)
+    output[key] = files
+  }
+  res.send(output)
 })
 
-app.get('/data/*', async (req, res) => {
+app.get('/*', async (req, res) => {
   const path = req.originalUrl
-  res.sendFile(path, {
+  res.sendFile(`data/${path}`, {
     root: __dirname
   })
 })
 
-app.put('/data/*', (req, res) => {
+app.put('/*', (req, res) => {
   const path = req.originalUrl.slice(1)
-  fs.writeFile(path, req.body.content, (error) => {
+  fs.writeFile(`data/${path}`, req.body.content, (error) => {
     console.warn(error)
     error
       ? res.status(500).send('Could not save')
@@ -42,7 +54,7 @@ app.put('/data/*', (req, res) => {
   })
 })
 
-app.post('/data/templates', async (req, res) => {
+app.post('/templates', async (req, res) => {
   try {
     const template_name = req.body.name
     const message = await utils.createTemplate(template_name)
@@ -53,7 +65,7 @@ app.post('/data/templates', async (req, res) => {
   }
 })
 
-app.delete('/data/templates/:name', async (req, res) => {
+app.delete('/templates/:name', async (req, res) => {
   try {
     const name = req.params.name
     const message = await utils.removeTemplate(name)

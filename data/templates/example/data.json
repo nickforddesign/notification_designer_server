@@ -3,7 +3,7 @@
 	"amount": "$100.00",
 	"date": "January 1, 2017",
 	"source": "My Bank Account",
-	"source_name": "Jane Stewart",
+	"source_name": "Brian Morgan",
 	"destination": "ACME",
 	"method": "Automatic",
 	"lease": "533 Washington St, Unit 1",

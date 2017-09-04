@@ -5,7 +5,7 @@ module.exports = function preprocess (data) {
   const output = sass.renderSync({
     data,
     includePaths: [
-      './data/scss/'
+      './data/styles/'
     ]
   })
   return output.css.toString()

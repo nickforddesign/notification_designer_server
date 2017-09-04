@@ -110,17 +110,24 @@ function isFile (path) {
 /**
  * Convert array of file paths to an object
  * 
- * @param {Array} paths
- * @returns {Object} the file system as a tree
+ * @param {Array} paths            array of paths
+ * @param {String} relative_path   optional relative path to start
+ * @returns {Object}               the file system as a tree
  */
-exports.pathsToTree = (paths) => {
+exports.pathsToTree = (paths = [], relative_path = '') => {
   let output = {}
   let directories = []
   let files = []
 
+  const short_relative_path_array = relative_path.split('/')
+  short_relative_path_array.shift()
+  const short_relative_path = short_relative_path_array.join('/')
+
+  console.log(short_relative_path)
+
   for (let index in paths) {
     const path = paths[index]
-    const is_file = isFile(path)
+    const is_file = isFile(`${relative_path}${path}`)
     is_file
       ? files.push(path)
       : directories.push(path)
@@ -129,13 +136,13 @@ exports.pathsToTree = (paths) => {
   for (let index in directories) {
     const path = directories[index]
     const split_path = path.split('/').join('/data/').split('/')
-    _.set(output, split_path, { path, type: 'folder', data: {} })
+    _.set(output, split_path, { path: `${short_relative_path}${path}`, type: 'folder', data: {} })
   }
 
   for (let index in files) {
     const path = files[index]
     const split_path = path.split('/').join('/data/').split('/')
-    _.set(output, split_path, { path, type: 'file' })
+    _.set(output, split_path, { path: `${short_relative_path}${path}`, type: 'file' })
   }
   return output
 }
@@ -159,6 +166,21 @@ const treeToArray = (object) => {
 }
 
 exports.treeToArray = treeToArray
+
+/**
+ * shorten an array of paths
+ * 
+ * @param {String} path_to_remove   beginning of path to remove
+ * @param {Array} paths_array      paths array to process
+ * @returns {Array}
+ */
+function shortenPaths(path_to_remove, paths_array) {
+  return paths_array.map(path => {
+    return path.replace(path_to_remove, '')
+  })
+}
+
+exports.shortenPaths = shortenPaths
 
 /**
  * Create new template
@@ -268,22 +290,20 @@ exports.removePartial = async (partial_name) => {
  * @returns {String}               rendered html
  */
 exports.renderEmail = async (template_path) => {
-  const path = `${template_path}/email`
-  
+  const path = `./data/${template_path}/email`
+
   const template = await readFile(`${path}/index.html`)
   const template_scss = await readFile(`${path}/style.scss`) || '//'
-  const template_data = JSON.parse(await readFile(`${template_path}/data.json`))
+  const template_data = JSON.parse(await readFile(`./data/${template_path}/data.json`))
 
   const template_css = await preprocess(template_scss)
   const template_inlined = await inline(template, {
     extraCss: template_css
   })
 
-  const subject_template = await readFile(`${path}/subject.html`)
-
-  const global_template = await readFile('./data/index.html')
-  const global_scss = await readFile('./data/globals.scss') || '//'
-  const global_data = JSON.parse(await readFile('./data/globals.json'))
+  const global_template = await readFile('./data/globals/index.html')
+  const global_scss = await readFile('./data/globals/globals.scss') || '//'
+  const global_data = JSON.parse(await readFile('./data/globals/globals.json'))
 
   const global_css = await preprocess(global_scss)
 
@@ -307,7 +327,9 @@ exports.renderEmail = async (template_path) => {
 
   const merged_data = _.merge({}, global_data, template_data)
   let html = await compile(global_template, merged_data, partials)
-  let subject = await compile (subject_template, merged_data)
+
+  const subject_template = await readFile(`${path}/subject.html`)
+  let subject = await compile(subject_template, merged_data)
 
   html = `
   <style>${global_css}</style>
@@ -318,3 +340,5 @@ exports.renderEmail = async (template_path) => {
     subject
   }
 }
+
+module.exports = exports
