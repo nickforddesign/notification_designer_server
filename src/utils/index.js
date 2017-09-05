@@ -341,4 +341,49 @@ exports.renderEmail = async (template_path) => {
   }
 }
 
-module.exports = exports
+/**
+ * render a text message
+ * 
+ * @param {String} template_path   path of template to render
+ * @returns {String}               rendered html
+ */
+exports.renderText = async (template_path) => {
+  const path = `./data/${template_path}/text`
+
+  const template = await readFile(`${path}/index.html`)
+  const template_data = JSON.parse(await readFile(`./data/${template_path}/data.json`))
+
+  const global_data = JSON.parse(await readFile('./data/globals/globals.json'))
+
+  const merged_data = _.merge({}, global_data, template_data)
+  let html = await compile(template, merged_data)
+
+  return {
+    html
+  }
+}
+
+/**
+ * render push notification
+ * 
+ * @param {String} template_path   path of template to render
+ * @returns {String}               rendered html
+ */
+exports.renderPush = async (template_path) => {
+  const path = `./data/${template_path}/push`
+
+  const template = await readFile(`${path}/index.html`)
+  const template_data = JSON.parse(await readFile(`./data/${template_path}/data.json`))
+
+  const global_data = JSON.parse(await readFile('./data/globals/globals.json'))
+
+  const merged_data = _.merge({}, global_data, template_data)
+  let html = await compile(template, merged_data)
+
+  return {
+    html
+  }
+}
+
+
+// module.exports = exports

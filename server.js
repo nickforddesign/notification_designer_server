@@ -109,6 +109,28 @@ app.post('/render/email', async (req, res) => {
   res.send(html)
 })
 
+app.post('/render/push', async (req, res) => {
+  const path = req.body.path
+
+  // need to remove /email from end of path
+  const template_path = path.split('/').slice(0, -1).join('/')
+
+  const html = await utils.renderPush(template_path)
+
+  res.send(html)
+})
+
+app.post('/render/text', async (req, res) => {
+  const path = req.body.path
+
+  // need to remove /email from end of path
+  const template_path = path.split('/').slice(0, -1).join('/')
+
+  const html = await utils.renderText(template_path)
+
+  res.send(html)
+})
+
 /*
 app.post('/render/template', async (req, res) => {
   try {
