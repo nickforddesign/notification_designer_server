@@ -99,36 +99,42 @@ app.delete('/partials/:name', async (req, res) => {
 })
 
 app.post('/render/email', async (req, res) => {
-  const path = req.body.path
+  try {
+    const path = req.body.path
+    // need to remove /email from end of path
+    const template_path = path.split('/').slice(0, -1).join('/')
+    const html = await utils.renderEmail(template_path)
 
-  // need to remove /email from end of path
-  const template_path = path.split('/').slice(0, -1).join('/')
-
-  const html = await utils.renderEmail(template_path)
-
-  res.send(html)
+    res.send(html)
+  } catch (error) {
+    return res.status(500).send(error.message)
+  }
 })
 
 app.post('/render/push', async (req, res) => {
-  const path = req.body.path
+  try {
+    const path = req.body.path
+    // need to remove /email from end of path
+    const template_path = path.split('/').slice(0, -1).join('/')
+    const html = await utils.renderPush(template_path)
 
-  // need to remove /email from end of path
-  const template_path = path.split('/').slice(0, -1).join('/')
-
-  const html = await utils.renderPush(template_path)
-
-  res.send(html)
+    res.send(html)
+  } catch (error) {
+    return res.status(500).send(error.message)
+  }
 })
 
 app.post('/render/text', async (req, res) => {
-  const path = req.body.path
+  try {
+    const path = req.body.path
+    // need to remove /email from end of path
+    const template_path = path.split('/').slice(0, -1).join('/')
+    const html = await utils.renderText(template_path)
 
-  // need to remove /email from end of path
-  const template_path = path.split('/').slice(0, -1).join('/')
-
-  const html = await utils.renderText(template_path)
-
-  res.send(html)
+    res.send(html)
+  } catch (error) {
+    return res.status(500).send(error.message)
+  }
 })
 
 /*

@@ -1,12 +1,16 @@
 const sass = require('node-sass')
 
 module.exports = function preprocess (data) {
-  console.log({data})
-  const output = sass.renderSync({
-    data,
-    includePaths: [
-      './data/styles/'
-    ]
-  })
-  return output.css.toString()
+  try {
+    const { css } = sass.renderSync({
+      data,
+      includePaths: [
+        './data/styles/'
+      ]
+    })
+    const output = css.toString()
+    return Promise.resolve(output)
+  } catch (error) {
+    return Promise.reject(error)
+  }
 }

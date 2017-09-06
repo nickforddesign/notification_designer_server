@@ -1,20 +1,25 @@
 {
-	"display_due_date": "September 16th",
-	"button_text": "Make a Payment",
-	"balance": "$1200",
-	"split": "$1200",
-	"url": "http://payment.rafiproperties.com",
-	"transfers": [
-		{
-			"name": "Tony Tonay",
-			"date": "9/1/17",
-			"status": "pending"
-		}
-	],
+	"type": "Automatic",
+	"amount": "$100.00",
+	"date": "January 1, 2017",
+	"source": "My Bank Account",
+	"source_name": "Brian Morgan",
+	"destination": "ACME",
+	"method": "Automatic",
+	"lease": "533 Washington St, Unit 1",
+	"bill_id": "RP404",
 	"details": [
 		{
 			"key": "Lease",
-			"value": "533 Washington St, Unit 2"
+			"value": "533 Washington St, Unit 1"
+		},
+		{
+			"key": "Bank Account",
+			"value": "My Bank Account"
+		},
+		{
+			"key": "Method",
+			"value": "Automatic"
 		},
 		{
 			"key": "Date",
@@ -23,10 +28,6 @@
 		{
 			"key": "Bill ID",
 			"value": "RP404"
-		},
-		{
-			"key": "Balance",
-			"value": "$2400"
 		}
 	]
 }
