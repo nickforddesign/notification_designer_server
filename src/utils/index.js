@@ -2,6 +2,7 @@ const _ = require('lodash')
 const fs = require('fs')
 const glob = require('glob')
 const rimraf = require('rimraf')
+const mkdirp = require('mkdirp')
 const preprocess = require('../preprocess')
 const compile = require('../compile')
 const inline = require('../inline')
@@ -52,6 +53,16 @@ function asyncCallback(fn, ...args) {
 
 exports.asyncCallback = asyncCallback
 
+async function transformAsync(promise, transform) {
+  try {
+    const data = await promise
+    const transformed = transform(data)
+    return Promise.resolve(transformed)
+  } catch (error) {
+    return Promise.reject(error)
+  }
+}
+
 /**
  * Append to file and return promise
  * 
@@ -65,6 +76,12 @@ function appendFile(path = '', content = '') {
 
 exports.appendFile = appendFile
 
+function writeFile(path = '', content = '') {
+  return asyncCallback(fs.writeFile, path, content)
+}
+
+exports.writeFile = writeFile
+
 /**
  * Make directory and return promise
  * 
@@ -73,8 +90,16 @@ exports.appendFile = appendFile
  * @returns 
  */
 function mkdir(path = '', mask = 0o775) {
-  return asyncCallback(fs.mkdir, path, mask)
+  return asyncCallback(mkdirp, path, mask)
 }
+
+exports.mkdir = mkdir
+
+function rmrf(path) {
+  return asyncCallback(rimraf, path)
+}
+
+exports.rmrf = rmrf
 
 /**
  * Read a file and return contents asynchronously
@@ -89,6 +114,27 @@ const readFile = (path = '', encoding = 'utf8') => {
 }
 
 exports.readFile = readFile
+
+const readdir = (path) => {
+  return transformAsync(asyncCallback(fs.readdir, path), (array) => {
+    return array.filter(filename => {
+      return !(/^\./.test(filename))
+    })
+  })
+}
+
+exports.readdir = readdir
+
+const readdirPaths = (path) => {
+  return transformAsync(asyncCallback(glob, `${path}/*`), (array) => {
+    return array.filter(path => {
+      const filename = path.split('/').slice(-1)
+      return !(/^\./.test(filename))
+    })
+  })
+}
+
+exports.readdirPaths = readdirPaths
 
 /**
  * Recursively read a directory asynchronously
@@ -123,7 +169,7 @@ exports.pathsToTree = (paths = [], relative_path = '') => {
   short_relative_path_array.shift()
   const short_relative_path = short_relative_path_array.join('/')
 
-  console.log(short_relative_path)
+  // console.log(short_relative_path)
 
   for (let index in paths) {
     const path = paths[index]
@@ -190,7 +236,7 @@ exports.shortenPaths = shortenPaths
  * @returns {Promise}
  */
 exports.createTemplate = async (template_name) => {
-  const templates = fs.readdirSync('data/templates')
+  const templates = await readdir('data/templates')
 
   if (templates.includes(template_name)) {
     throw new Error('A template with that name already exists')
@@ -244,7 +290,7 @@ exports.removeTemplate = async (template_name) => {
 * @returns {Promise}
 */
 exports.createPartial = async (partial_name) => {
-  const partials = fs.readdirSync('data/partials')
+  const partials = await readdir('data/partials')
   if (partials.includes(partial_name)) {
     throw new Error('A partial with that name already exists')
   }
@@ -307,9 +353,7 @@ exports.renderEmail = async (template_path) => {
 
   const global_css = await preprocess(global_scss)
 
-  let partial_paths_array = fs.readdirSync('./data/partials').filter(filename => {
-    return !(/^\./.test(filename))
-  })
+  let partial_paths_array = await readdir('./data/partials')
 
   let partials = {}
 
@@ -385,5 +429,11 @@ exports.renderPush = async (template_path) => {
   }
 }
 
-
 // module.exports = exports
+
+exports.trimTemplate = async (template_string) => {
+  const no_html_comments = template_string.replace(/<!--[\s\S]*?-->/g, '')
+  const no_mustache_comments = await compile(no_html_comments)
+  const no_whitespace = no_mustache_comments.replace(' ', '')
+  return no_whitespace
+}

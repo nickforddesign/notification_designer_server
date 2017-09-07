@@ -1,11 +1,7 @@
-// const _ = require('lodash')
 const fs = require('fs')
 const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser')
-// const preprocess = require('./src/preprocess')
-// const compile = require('./src/compile')
-// const inline = require('./src/inline')
 const utils = require('./src/utils')
 const port = '3636'
 
@@ -137,68 +133,4 @@ app.post('/render/text', async (req, res) => {
   }
 })
 
-/*
-app.post('/render/template', async (req, res) => {
-  try {
-    const template_html = req.body.template || ''
-    const css = req.body.css || '//' // sass-node will throw error if nothing is passed
-
-    const processed = await preprocess(css)
-    const inlined = await inline(template_html, {
-      extraCss: processed
-    })
-    const main_html = await utils.readFile('./data/index.html')
-
-    let partials_array = fs.readdirSync('./data/partials').filter(filename => {
-      return !(/^\./.test(filename))
-    })
-    // console.log({partials_array})
-    let partials = {}
-
-    // partials_array.map(async (name) => {
-    for (let name of partials_array) {
-      const template = await utils.readFile(`./data/partials/${name}/index.html`)
-      const scss = await utils.readFile(`./data/partials/${name}/style.scss`)
-      const css = await preprocess(scss)
-      const template_inlined = await inline(template, {
-        extraCss: css
-      })
-      partials[name] = template_inlined
-    }
-
-    partials.content = inlined
-
-    const partial_json = require('./data/templates/bill_due_today/data.json')
-    const json = require('./data/globals.json')
-    const merged = _.merge({}, json, partial_json)
-    let html = await compile(main_html, merged, partials)
-
-    const data = await utils.readFile('./data/globals.scss')
-    const processed_globals = await preprocess(data)
-
-    html = `
-    <style>${processed_globals}</style>
-    ${html}
-    `
-    res.send(html)
-
-    console.log('post request: /')
-  } catch (error) {
-    // console.log('caught error', error)
-    res.status(500).send(error.message)
-  }
-})
-*/
-
 console.log(`Listening on port ${port}`)
-
-/*
-io.on('connection', (socket) => {
-  socket.on('codechange', (data) => {
-    console.log(data)
-    // const inlined = await inline(template_html)
-    // const html = await compile(inlined, json)
-    socket.emit('codecompiled', data)
-  })
-})
-*/

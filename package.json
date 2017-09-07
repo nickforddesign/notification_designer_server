@@ -13,6 +13,7 @@
   "dependencies": {
     "asyncawait": "^1.0.6",
     "body-parser": "^1.17.2",
+    "chalk": "^2.1.0",
     "cors": "^2.8.4",
     "express": "^4.15.4",
     "glob": "^7.1.2",
@@ -20,6 +21,7 @@
     "http": "0.0.0",
     "inline-css": "^2.2.2",
     "lodash": "^4.17.4",
+    "mkdirp": "^0.5.1",
     "node-sass": "^4.5.3",
     "require-text": "0.0.1",
     "rimraf": "^2.6.1"
